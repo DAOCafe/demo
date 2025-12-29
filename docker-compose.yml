@@ -1,0 +1,19 @@
+services:
+  demo:
+    build:
+      context: .
+      args:
+        - VITE_PINATA_JWT=${VITE_PINATA_JWT}
+        - VITE_PINATA_GATEWAY=${VITE_PINATA_GATEWAY}
+        - VITE_TENDERLY_API_URL=${VITE_TENDERLY_API_URL}
+        - VITE_TENDERLY_API_KEY=${VITE_TENDERLY_API_KEY}
+    restart: unless-stopped
+    networks:
+      - indexer_app-network
+    expose:
+      - "80"
+
+networks:
+  # Connect to the indexer's existing network
+  indexer_app-network:
+    external: true
