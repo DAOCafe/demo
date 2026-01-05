@@ -8,9 +8,8 @@ import { MarkdownEditor } from '../components/common/MarkdownEditor';
 import { ActionBuilder } from '../components/proposal/ActionBuilder';
 import { SimulationResults } from '../components/proposal/SimulationResults';
 import { governorAbi, tokenAbi } from '../config/abis';
-import { uploadProposalMetadata, getIpfsUrl } from '../services/pinata';
 import { simulateProposalActions } from '../services/simulation';
-import type { ProposalAction, ProposalStep, SimulationResult, ProposalMetadata } from '../types/proposal';
+import type { ProposalAction, ProposalStep, SimulationResult } from '../types/proposal';
 
 type SupportedChainId = 8453 | 11155111;
 
@@ -32,8 +31,6 @@ export function CreateProposalPage() {
     const [hasSimulated, setHasSimulated] = useState(false);
 
     // Submission state
-    const [isUploadingToIpfs, setIsUploadingToIpfs] = useState(false);
-    const [ipfsCid, setIpfsCid] = useState<string | null>(null);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
     // Fetch DAO data
@@ -137,36 +134,10 @@ export function CreateProposalPage() {
         setSubmitError(null);
 
         try {
-            // Step 1: Upload to IPFS
-            setIsUploadingToIpfs(true);
+            // Build on-chain description
+            const onChainDescription = `# ${title}\n\n${description}`;
 
-            const metadata: ProposalMetadata = {
-                title,
-                description,
-                actions: actions.map((a) => ({
-                    description: a.description,
-                    target: a.target,
-                    value: a.value.toString(),
-                    calldata: a.calldata,
-                })),
-                createdAt: new Date().toISOString(),
-                createdBy: address,
-                dao: {
-                    id: daoId!,
-                    name: dao.name,
-                    governor: dao.governor,
-                    chainId: typedDaoChainId,
-                },
-            };
-
-            const cid = await uploadProposalMetadata(metadata);
-            setIpfsCid(cid);
-            setIsUploadingToIpfs(false);
-
-            // Step 2: Build on-chain description with IPFS link
-            const onChainDescription = `# ${title}\n\n${description}\n\n---\n📄 Full proposal: ipfs://${cid}`;
-
-            // Step 3: Submit to blockchain
+            // Submit to blockchain
             const targets = actions.map((a) => a.target);
             const values = actions.map((a) => a.value);
             const calldatas = actions.map((a) => a.calldata);
@@ -182,7 +153,6 @@ export function CreateProposalPage() {
         } catch (error) {
             console.error('Submit failed:', error);
             setSubmitError(error instanceof Error ? error.message : 'Failed to submit proposal');
-            setIsUploadingToIpfs(false);
         }
     };
 
@@ -418,19 +388,13 @@ export function CreateProposalPage() {
 
                         {/* Submit Section */}
                         <div className="review-section submit-section">
-                            {submitError && (
-                                <div className="submit-error">
-                                    <strong>Error:</strong> {submitError}
-                                </div>
-                            )}
+                        {submitError && (
+                            <div className="submit-error">
+                                <strong>Error:</strong> {submitError}
+                            </div>
+                        )}
 
-                            {ipfsCid && (
-                                <div className="ipfs-success">
-                                    ✓ Uploaded to IPFS: <a href={getIpfsUrl(ipfsCid)} target="_blank" rel="noopener noreferrer">{ipfsCid.substring(0, 16)}...</a>
-                                </div>
-                            )}
-
-                            {writeError && (
+                        {writeError && (
                                 <div className="submit-error">
                                     <strong>Transaction Error:</strong> {writeError.message}
                                 </div>
@@ -450,15 +414,13 @@ export function CreateProposalPage() {
                                 <button
                                     className="btn btn-primary btn-lg"
                                     onClick={handleSubmit}
-                                    disabled={!canSubmit || isSubmitting || isUploadingToIpfs || isConfirming}
+                                    disabled={!canSubmit || isSubmitting || isConfirming}
                                 >
-                                    {isUploadingToIpfs
-                                        ? 'Uploading to IPFS...'
-                                        : isSubmitting
-                                            ? 'Confirm in Wallet...'
-                                            : isConfirming
-                                                ? 'Confirming...'
-                                                : '🚀 Submit Proposal'}
+                                    {isSubmitting
+                                        ? 'Confirm in Wallet...'
+                                        : isConfirming
+                                            ? 'Confirming...'
+                                            : '🚀 Submit Proposal'}
                                 </button>
                             </div>
 

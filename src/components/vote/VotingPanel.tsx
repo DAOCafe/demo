@@ -69,7 +69,6 @@ export function VotingPanel({
         userVote,
         isLoading,
         isVoting,
-        isUploadingReason,
         txHash: voteTxHash,
         vote,
         reset: resetVote,
@@ -114,12 +113,12 @@ export function VotingPanel({
         setShowConfirmModal(true);
     };
 
-    const handleConfirmVote = async () => {
+    const handleConfirm = async () => {
         if (!selectedSupport) return;
         await vote(selectedSupport, reason.trim() || undefined);
     };
 
-    const handleCloseVoteModal = () => {
+    const handleCloseModal = () => {
         setShowConfirmModal(false);
         setSelectedSupport(null);
         if (voteTxHash) {
@@ -446,7 +445,7 @@ export function VotingPanel({
                     <div className="vote-reason-container">
                         <textarea
                             className="vote-reason-input"
-                            placeholder="Why are you voting this way? (stored on IPFS)"
+                            placeholder="Why are you voting this way? (optional)"
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
                             rows={3}
@@ -471,10 +470,9 @@ export function VotingPanel({
                 votingPower={votingPower}
                 reason={reason}
                 isVoting={isVoting}
-                isUploadingReason={isUploadingReason}
-                txHash={voteTxHash}
-                onConfirm={handleConfirmVote}
-                onClose={handleCloseVoteModal}
+                txHash={txHash}
+                onConfirm={handleConfirm}
+                onClose={handleCloseModal}
             />
         </>
     );

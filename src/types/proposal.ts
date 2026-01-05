@@ -24,32 +24,6 @@ export interface ActionTemplateOption {
     icon: string;
 }
 
-// Metadata stored on IPFS
-export interface ProposalMetadata {
-    /** Proposal title */
-    title: string;
-    /** Full markdown description */
-    description: string;
-    /** Human-readable action summaries */
-    actions: {
-        description: string;
-        target: string;
-        value: string;
-        calldata: string;
-    }[];
-    /** Proposal creation timestamp */
-    createdAt: string;
-    /** Creator address */
-    createdBy: string;
-    /** DAO info */
-    dao: {
-        id: string;
-        name: string;
-        governor: string;
-        chainId: number;
-    };
-}
-
 // Simulation result types
 export interface SimulationResult {
     success: boolean;

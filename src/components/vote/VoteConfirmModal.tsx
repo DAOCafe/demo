@@ -7,7 +7,6 @@ interface VoteConfirmModalProps {
     votingPower: bigint;
     reason: string;
     isVoting: boolean;
-    isUploadingReason: boolean;
     txHash: `0x${string}` | undefined;
     onConfirm: () => void;
     onClose: () => void;
@@ -19,7 +18,6 @@ export function VoteConfirmModal({
     votingPower,
     reason,
     isVoting,
-    isUploadingReason,
     txHash,
     onConfirm,
     onClose,
@@ -54,9 +52,6 @@ export function VoteConfirmModal({
         }
         if (isVoting) {
             return 'Confirm in your wallet...';
-        }
-        if (isUploadingReason) {
-            return 'Uploading reason to IPFS...';
         }
         return null;
     };
@@ -94,9 +89,6 @@ export function VoteConfirmModal({
                                 <div className="vote-confirm-reason">
                                     <span style={{ color: 'var(--text-tertiary)' }}>Reason:</span>
                                     <p>"{reason}"</p>
-                                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                        Will be stored on IPFS
-                                    </span>
                                 </div>
                             )}
                         </div>
@@ -127,17 +119,17 @@ export function VoteConfirmModal({
                             <button
                                 className="btn btn-ghost"
                                 onClick={onClose}
-                                disabled={isVoting || isUploadingReason}
+                                disabled={isVoting}
                             >
                                 Cancel
                             </button>
                             <button
                                 className="btn btn-primary"
                                 onClick={onConfirm}
-                                disabled={isVoting || isUploadingReason}
+                                disabled={isVoting}
                                 style={{ backgroundColor: getSupportColor() }}
                             >
-                                {isVoting || isUploadingReason ? 'Submitting...' : 'Submit Vote'}
+                                {isVoting ? 'Submitting...' : 'Submit Vote'}
                             </button>
                         </>
                     )}

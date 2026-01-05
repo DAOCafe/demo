@@ -1,7 +1,6 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { useVotesByProposal, useTokenHoldersByDAO } from 'daocafe-sdk';
-import { uploadVoteReason, type VoteReasonMetadata } from '../services/pinata';
 
 // Governor ABI for voting functions
 const GOVERNOR_ABI = [
@@ -48,8 +47,6 @@ interface UseVotingResult {
     isLoading: boolean;
     /** Whether a vote transaction is pending */
     isVoting: boolean;
-    /** Whether uploading to IPFS */
-    isUploadingReason: boolean;
     /** Transaction hash if vote submitted */
     txHash: `0x${string}` | undefined;
     /** Cast a vote */
@@ -66,7 +63,6 @@ export function useVoting(
     onChainProposalId: string
 ): UseVotingResult {
     const { address, isConnected } = useAccount();
-    const [isUploadingReason, setIsUploadingReason] = useState(false);
 
     // Fetch user's voting power from SDK
     const { data: tokenHolders, isLoading: holdersLoading } = useTokenHoldersByDAO(daoId, {
@@ -127,30 +123,7 @@ export function useVoting(
         async (support: VoteSupportType, reason?: string) => {
             if (!address || !canVote) return;
 
-            let reasonString = '';
-
-            // If reason provided, upload to IPFS first
-            if (reason && reason.trim()) {
-                setIsUploadingReason(true);
-                try {
-                    const metadata: VoteReasonMetadata = {
-                        voter: address,
-                        proposalId,
-                        daoId,
-                        support,
-                        reason: reason.trim(),
-                        createdAt: new Date().toISOString(),
-                    };
-                    const ipfsHash = await uploadVoteReason(metadata);
-                    reasonString = `ipfs://${ipfsHash}`;
-                } catch (error) {
-                    console.error('Failed to upload vote reason to IPFS:', error);
-                    // Fall back to using reason directly if IPFS fails
-                    reasonString = reason.trim();
-                } finally {
-                    setIsUploadingReason(false);
-                }
-            }
+            const reasonString = reason?.trim() || '';
 
             // Call appropriate contract function
             if (reasonString) {
@@ -171,7 +144,7 @@ export function useVoting(
                 });
             }
         },
-        [address, canVote, proposalId, daoId, governorAddress, onChainProposalId, chainId, writeContract]
+        [address, canVote, governorAddress, onChainProposalId, chainId, writeContract]
     );
 
     const reset = useCallback(() => {
@@ -184,7 +157,6 @@ export function useVoting(
         canVote,
         isLoading: holdersLoading || votesLoading,
         isVoting: isWritePending || isConfirming,
-        isUploadingReason,
         txHash,
         vote,
         reset,
