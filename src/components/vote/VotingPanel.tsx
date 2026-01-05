@@ -470,7 +470,7 @@ export function VotingPanel({
                 votingPower={votingPower}
                 reason={reason}
                 isVoting={isVoting}
-                txHash={txHash}
+                txHash={voteTxHash}
                 onConfirm={handleConfirm}
                 onClose={handleCloseModal}
             />
