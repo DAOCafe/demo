@@ -62,12 +62,10 @@ interface UseProposalExecutionResult {
     txHash: `0x${string}` | undefined;
     /** Current action being performed */
     currentAction: ExecutionAction | null;
-    /** Queue the proposal */
-    queueProposal: () => void;
-    /** Execute the proposal */
-    executeProposal: () => void;
-    /** Cancel the proposal (only proposer) */
-    cancelProposal: () => void;
+    /** Set the action to be performed (opens modal) */
+    setAction: (action: ExecutionAction) => void;
+    /** Confirm and execute the selected action */
+    confirmExecution: () => void;
     /** Reset transaction state */
     reset: () => void;
 }
@@ -137,50 +135,32 @@ export function useProposalExecution(
         return { targets, values, calldatas, descriptionHash };
     }, [proposal]);
 
-    // Queue proposal
-    const queueProposal = useCallback(() => {
-        const params = getProposalParams();
-        if (!params || !canQueue) return;
+    // Set the action to perform (called when button clicked, before modal confirmation)
+    const setAction = useCallback((action: ExecutionAction) => {
+        setCurrentAction(action);
+    }, []);
 
-        setCurrentAction('queue');
+    // Confirm and execute the selected action (called from modal confirmation)
+    const confirmExecution = useCallback(() => {
+        if (!currentAction) return;
+
+        const params = getProposalParams();
+        if (!params) return;
+
+        // Validate permissions based on action
+        if (currentAction === 'queue' && !canQueue) return;
+        if (currentAction === 'execute' && !canExecute) return;
+        if (currentAction === 'cancel' && !canCancel) return;
+
+        // Execute the appropriate contract function
         writeContract({
             address: governorAddress,
             abi: GOVERNOR_EXECUTION_ABI,
-            functionName: 'queue',
+            functionName: currentAction,
             args: [params.targets, params.values, params.calldatas, params.descriptionHash],
             chainId: chainId as 8453 | 11155111,
         });
-    }, [getProposalParams, canQueue, governorAddress, chainId, writeContract]);
-
-    // Execute proposal
-    const executeProposal = useCallback(() => {
-        const params = getProposalParams();
-        if (!params || !canExecute) return;
-
-        setCurrentAction('execute');
-        writeContract({
-            address: governorAddress,
-            abi: GOVERNOR_EXECUTION_ABI,
-            functionName: 'execute',
-            args: [params.targets, params.values, params.calldatas, params.descriptionHash],
-            chainId: chainId as 8453 | 11155111,
-        });
-    }, [getProposalParams, canExecute, governorAddress, chainId, writeContract]);
-
-    // Cancel proposal
-    const cancelProposal = useCallback(() => {
-        const params = getProposalParams();
-        if (!params || !canCancel) return;
-
-        setCurrentAction('cancel');
-        writeContract({
-            address: governorAddress,
-            abi: GOVERNOR_EXECUTION_ABI,
-            functionName: 'cancel',
-            args: [params.targets, params.values, params.calldatas, params.descriptionHash],
-            chainId: chainId as 8453 | 11155111,
-        });
-    }, [getProposalParams, canCancel, governorAddress, chainId, writeContract]);
+    }, [currentAction, getProposalParams, canQueue, canExecute, canCancel, governorAddress, chainId, writeContract]);
 
     // Reset state
     const reset = useCallback(() => {
@@ -197,9 +177,8 @@ export function useProposalExecution(
         isConfirming,
         txHash,
         currentAction,
-        queueProposal,
-        executeProposal,
-        cancelProposal,
+        setAction,
+        confirmExecution,
         reset,
     };
 }

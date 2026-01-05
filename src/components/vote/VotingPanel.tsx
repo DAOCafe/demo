@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useConnect } from 'wagmi';
 import { useVoting, type VoteSupportType } from '../../hooks/useVoting';
-import { useProposalExecution, type ExecutionAction } from '../../hooks/useProposalExecution';
+import { useProposalExecution } from '../../hooks/useProposalExecution';
+import type { ExecutionAction } from '../../hooks/useProposalExecution';
 import { VoteConfirmModal } from './VoteConfirmModal';
 import { ExecuteConfirmModal } from './ExecuteConfirmModal';
 import { formatTokenAmount } from '../../utils/format';
@@ -80,9 +81,8 @@ export function VotingPanel({
         isConfirming: isExecutionConfirming,
         txHash: executionTxHash,
         currentAction,
-        queueProposal,
-        executeProposal,
-        cancelProposal,
+        setAction,
+        confirmExecution,
         reset: resetExecution,
     } = useProposalExecution(proposal, proposalState, governorAddress, chainId);
 
@@ -130,14 +130,8 @@ export function VotingPanel({
     };
 
     const handleExecutionAction = (action: ExecutionAction) => {
-        setShowExecuteModal(true);
-        if (action === 'queue') {
-            queueProposal();
-        } else if (action === 'execute') {
-            executeProposal();
-        } else if (action === 'cancel') {
-            cancelProposal();
-        }
+        setAction(action); // Set the action to perform
+        setShowExecuteModal(true); // Open the modal
     };
 
     const handleCloseExecuteModal = () => {
@@ -218,7 +212,7 @@ export function VotingPanel({
                     isConfirming={isExecutionConfirming}
                     txHash={executionTxHash}
                     chainId={chainId}
-                    onConfirm={() => { }} // Already triggered
+                    onConfirm={confirmExecution}
                     onClose={handleCloseExecuteModal}
                 />
             </>
@@ -289,7 +283,7 @@ export function VotingPanel({
                     isConfirming={isExecutionConfirming}
                     txHash={executionTxHash}
                     chainId={chainId}
-                    onConfirm={() => { }}
+                    onConfirm={confirmExecution}
                     onClose={handleCloseExecuteModal}
                 />
             </>
@@ -331,7 +325,7 @@ export function VotingPanel({
                     isConfirming={isExecutionConfirming}
                     txHash={executionTxHash}
                     chainId={chainId}
-                    onConfirm={() => { }}
+                    onConfirm={confirmExecution}
                     onClose={handleCloseExecuteModal}
                 />
             </div>
