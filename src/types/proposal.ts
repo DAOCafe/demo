@@ -15,7 +15,13 @@ export type ActionTemplateType =
     | 'transfer-eth'
     | 'transfer-erc20'
     | 'set-manager'
-    | 'custom';
+    | 'custom'
+    | 'update-voting-delay'
+    | 'update-voting-period'
+    | 'update-proposal-threshold'
+    | 'update-quorum'
+    | 'batch-transfer-eth'
+    | 'batch-transfer-erc20';
 
 export interface ActionTemplateOption {
     type: ActionTemplateType;

@@ -4,6 +4,12 @@ import { TransferEthForm } from './ActionTemplates/TransferEthForm';
 import { TransferErc20Form } from './ActionTemplates/TransferErc20Form';
 import { SetManagerForm } from './ActionTemplates/SetManagerForm';
 import { CustomActionForm } from './ActionTemplates/CustomActionForm';
+import { UpdateVotingDelayForm } from './ActionTemplates/UpdateVotingDelayForm';
+import { UpdateVotingPeriodForm } from './ActionTemplates/UpdateVotingPeriodForm';
+import { UpdateProposalThresholdForm } from './ActionTemplates/UpdateProposalThresholdForm';
+import { UpdateQuorumForm } from './ActionTemplates/UpdateQuorumForm';
+import { BatchTransferEthForm } from './ActionTemplates/BatchTransferEthForm';
+import { BatchTransferErc20Form } from './ActionTemplates/BatchTransferErc20Form';
 
 const ACTION_TEMPLATES: ActionTemplateOption[] = [
     {
@@ -17,6 +23,42 @@ const ACTION_TEMPLATES: ActionTemplateOption[] = [
         label: 'Transfer ERC20',
         description: 'Send tokens from the treasury to an address',
         icon: '🪙',
+    },
+    {
+        type: 'batch-transfer-eth',
+        label: 'Batch Transfer ETH',
+        description: 'Send ETH to multiple recipients',
+        icon: '💸',
+    },
+    {
+        type: 'batch-transfer-erc20',
+        label: 'Batch Transfer ERC20',
+        description: 'Send tokens to multiple recipients',
+        icon: '📦',
+    },
+    {
+        type: 'update-voting-delay',
+        label: 'Update Voting Delay',
+        description: 'Change delay before voting starts',
+        icon: '⏱️',
+    },
+    {
+        type: 'update-voting-period',
+        label: 'Update Voting Period',
+        description: 'Change duration of voting period',
+        icon: '📅',
+    },
+    {
+        type: 'update-proposal-threshold',
+        label: 'Update Proposal Threshold',
+        description: 'Change minimum tokens to propose',
+        icon: '🎯',
+    },
+    {
+        type: 'update-quorum',
+        label: 'Update Quorum',
+        description: 'Change quorum percentage required',
+        icon: '📊',
     },
     {
         type: 'set-manager',
@@ -53,6 +95,12 @@ export function ActionBuilder({
 }: ActionBuilderProps) {
     const [selectedTemplate, setSelectedTemplate] = useState<ActionTemplateType | null>(null);
 
+    // Handler for batch operations (multiple actions)
+    const handleBatchAdd = (batchActions: ProposalAction[]) => {
+        batchActions.forEach((action) => onAddAction(action));
+        setSelectedTemplate(null);
+    };
+
     const renderTemplateForm = () => {
         switch (selectedTemplate) {
             case 'transfer-eth':
@@ -74,6 +122,61 @@ export function ActionBuilder({
                         }}
                         timelockAddress={timelockAddress}
                         chainId={chainId}
+                    />
+                );
+            case 'batch-transfer-eth':
+                return (
+                    <BatchTransferEthForm
+                        onAdd={handleBatchAdd}
+                        timelockAddress={timelockAddress}
+                    />
+                );
+            case 'batch-transfer-erc20':
+                return (
+                    <BatchTransferErc20Form
+                        onAdd={handleBatchAdd}
+                        timelockAddress={timelockAddress}
+                        chainId={chainId}
+                    />
+                );
+            case 'update-voting-delay':
+                return (
+                    <UpdateVotingDelayForm
+                        onAdd={(action) => {
+                            onAddAction(action);
+                            setSelectedTemplate(null);
+                        }}
+                        governorAddress={governorAddress}
+                    />
+                );
+            case 'update-voting-period':
+                return (
+                    <UpdateVotingPeriodForm
+                        onAdd={(action) => {
+                            onAddAction(action);
+                            setSelectedTemplate(null);
+                        }}
+                        governorAddress={governorAddress}
+                    />
+                );
+            case 'update-proposal-threshold':
+                return (
+                    <UpdateProposalThresholdForm
+                        onAdd={(action) => {
+                            onAddAction(action);
+                            setSelectedTemplate(null);
+                        }}
+                        governorAddress={governorAddress}
+                    />
+                );
+            case 'update-quorum':
+                return (
+                    <UpdateQuorumForm
+                        onAdd={(action) => {
+                            onAddAction(action);
+                            setSelectedTemplate(null);
+                        }}
+                        governorAddress={governorAddress}
                     />
                 );
             case 'set-manager':

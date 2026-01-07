@@ -71,6 +71,7 @@ export const formatTimeUntil = (timestamp: string | number): string => {
     if (days > 0) return `${days}d left`;
     if (hours > 0) return `${hours}h left`;
     if (minutes > 0) return `${minutes}m left`;
+    if (seconds > 0) return `${seconds}s left`;
     return 'ending soon';
 };
 
