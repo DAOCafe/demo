@@ -53,7 +53,7 @@ export function UpdateVotingPeriodForm({
             const calldata = encodeFunctionData({
                 abi: GOVERNOR_ABI,
                 functionName: 'setVotingPeriod',
-                args: [BigInt(periodNum)],
+                args: [periodNum],
             });
 
             const action: ProposalAction = {

@@ -15,32 +15,46 @@ interface BatchTransferErc20FormProps {
     chainId: number;
 }
 
+type SupportedChainId = 8453 | 11155111;
+
 export function BatchTransferErc20Form({ onAdd, timelockAddress, chainId }: BatchTransferErc20FormProps) {
     const [tokenAddress, setTokenAddress] = useState('');
     const [recipients, setRecipients] = useState<Recipient[]>([{ address: '', amount: '' }]);
     const [error, setError] = useState('');
 
+    const isValidTokenAddress = isAddress(tokenAddress);
+    const typedChainId = chainId as SupportedChainId;
+
     // Fetch token info
     const { data: tokenSymbol } = useReadContract({
-        address: isAddress(tokenAddress) ? (tokenAddress as `0x${string}`) : undefined,
+        address: isValidTokenAddress ? (tokenAddress as `0x${string}`) : undefined,
         abi: erc20Abi,
         functionName: 'symbol',
-        chainId,
+        chainId: typedChainId,
+        query: {
+            enabled: isValidTokenAddress,
+        },
     });
 
     const { data: tokenDecimals } = useReadContract({
-        address: isAddress(tokenAddress) ? (tokenAddress as `0x${string}`) : undefined,
+        address: isValidTokenAddress ? (tokenAddress as `0x${string}`) : undefined,
         abi: erc20Abi,
         functionName: 'decimals',
-        chainId,
+        chainId: typedChainId,
+        query: {
+            enabled: isValidTokenAddress,
+        },
     });
 
     const { data: timelockBalance } = useReadContract({
-        address: isAddress(tokenAddress) ? (tokenAddress as `0x${string}`) : undefined,
+        address: isValidTokenAddress ? (tokenAddress as `0x${string}`) : undefined,
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: timelockAddress ? [timelockAddress as `0x${string}`] : undefined,
-        chainId,
+        chainId: typedChainId,
+        query: {
+            enabled: isValidTokenAddress && !!timelockAddress,
+        },
     });
 
     const addRecipient = () => {

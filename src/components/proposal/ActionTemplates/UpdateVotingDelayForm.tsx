@@ -53,7 +53,7 @@ export function UpdateVotingDelayForm({
             const calldata = encodeFunctionData({
                 abi: GOVERNOR_ABI,
                 functionName: 'setVotingDelay',
-                args: [BigInt(delayNum)],
+                args: [delayNum],
             });
 
             const action: ProposalAction = {
