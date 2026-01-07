@@ -112,13 +112,22 @@ export function CreateProposalPage() {
     };
 
     const handleSimulate = async () => {
-        if (!dao?.timelock || !daoChainId) return;
+        if (!dao?.timelock || !dao?.governor || !daoChainId) return;
 
         setIsSimulating(true);
         setSimulationResults([]);
 
         try {
-            const results = await simulateProposalActions(daoChainId, dao.timelock, actions);
+            // Build the same description that will be used on-chain
+            const onChainDescription = `# ${title}\n\n${description}`;
+            
+            const results = await simulateProposalActions(
+                daoChainId,
+                dao.governor,
+                dao.timelock,
+                actions,
+                onChainDescription
+            );
             setSimulationResults(results);
             setHasSimulated(true);
         } catch (error) {

@@ -1,10 +1,27 @@
 // Tenderly simulation service for proposal action simulation
 
 import type { ProposalAction, SimulationResult, StateChange } from '../types/proposal';
+import { encodeFunctionData, keccak256, toHex } from 'viem';
 
 // Tenderly configuration from environment variables
 const TENDERLY_API_URL = import.meta.env.VITE_TENDERLY_API_URL;
 const TENDERLY_API_KEY = import.meta.env.VITE_TENDERLY_API_KEY;
+
+// Governor execute ABI for full execution simulation
+const GOVERNOR_EXECUTE_ABI = [
+    {
+        type: 'function',
+        name: 'execute',
+        inputs: [
+            { name: 'targets', type: 'address[]' },
+            { name: 'values', type: 'uint256[]' },
+            { name: 'calldatas', type: 'bytes[]' },
+            { name: 'descriptionHash', type: 'bytes32' },
+        ],
+        outputs: [{ name: 'proposalId', type: 'uint256' }],
+        stateMutability: 'payable',
+    },
+] as const;
 
 interface TenderlySimulationRequest {
     network_id: string;
@@ -225,19 +242,91 @@ export async function simulateTransaction(
 }
 
 /**
+ * Check if any actions are calling back into the governor (self-modifying actions)
+ * These need special simulation through Governor.execute() to populate the governance call queue
+ */
+function hasGovernorSelfCalls(actions: ProposalAction[], governorAddress: string): boolean {
+    return actions.some(action => 
+        action.target.toLowerCase() === governorAddress.toLowerCase()
+    );
+}
+
+/**
+ * Simulate all proposal actions through the full Governor.execute() flow
+ * This properly initializes the governance call queue for onlyGovernance functions
+ */
+export async function simulateProposalExecute(
+    chainId: number,
+    governorAddress: string,
+    timelockAddress: string,
+    actions: ProposalAction[],
+    description: string
+): Promise<SimulationResult> {
+    // Encode the Governor.execute() call
+    const targets = actions.map(a => a.target);
+    const values = actions.map(a => a.value);
+    const calldatas = actions.map(a => a.calldata);
+    const descriptionHash = keccak256(toHex(description));
+
+    const executeCalldata = encodeFunctionData({
+        abi: GOVERNOR_EXECUTE_ABI,
+        functionName: 'execute',
+        args: [targets, values, calldatas, descriptionHash],
+    });
+
+    // Simulate from timelock calling Governor.execute()
+    // The timelock is the one that would actually call execute() after the delay
+    return await simulateTransaction(
+        chainId,
+        timelockAddress,
+        governorAddress,
+        0n,
+        executeCalldata
+    );
+}
+
+/**
  * Simulate all proposal actions as if executed by the timelock
+ * 
+ * This function intelligently detects if actions are calling back into the Governor
+ * (self-modifying actions like governance parameter updates) and simulates them
+ * through the proper Governor.execute() flow to avoid the onlyGovernance queue error.
+ * 
+ * For regular actions (transfers, external calls), it simulates them individually.
  */
 export async function simulateProposalActions(
     chainId: number,
+    governorAddress: string,
     timelockAddress: string,
-    actions: ProposalAction[]
+    actions: ProposalAction[],
+    description: string = 'Simulation Test'
 ): Promise<SimulationResult[]> {
-    const results: SimulationResult[] = [];
+    // Check if any actions are self-modifying (calling back into the governor)
+    if (hasGovernorSelfCalls(actions, governorAddress)) {
+        // Simulate through full Governor.execute() to populate governance call queue
+        const fullExecutionResult = await simulateProposalExecute(
+            chainId,
+            governorAddress,
+            timelockAddress,
+            actions,
+            description
+        );
 
+        // Return one result per action with the same outcome
+        // (since they all execute together in one transaction)
+        return actions.map(() => ({
+            ...fullExecutionResult,
+            // Distribute gas evenly across actions for display purposes
+            gasUsed: Math.floor(Number(fullExecutionResult.gasUsed) / actions.length).toString(),
+        }));
+    }
+
+    // For non-self-modifying actions, simulate individually as before
+    const results: SimulationResult[] = [];
     for (const action of actions) {
         const result = await simulateTransaction(
             chainId,
-            timelockAddress, // Actions are executed by timelock
+            timelockAddress,
             action.target,
             action.value,
             action.calldata
