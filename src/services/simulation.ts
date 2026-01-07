@@ -32,6 +32,14 @@ interface TenderlySimulationRequest {
     save: boolean;
     save_if_fails: boolean;
     simulation_type: 'full' | 'quick';
+    // Optional state overrides (Tenderly feature) used to tweak storage for simulations
+    // https://docs.tenderly.co/simulations/state-overrides
+    state_objects?: Record<
+        string,
+        {
+            storage?: Record<string, string>;
+        }
+    >;
 }
 
 interface TenderlyStateChange {
@@ -186,7 +194,8 @@ export async function simulateTransaction(
     from: string,
     to: string,
     value: bigint,
-    data: string
+    data: string,
+    stateOverrides?: TenderlySimulationRequest['state_objects']
 ): Promise<SimulationResult> {
     if (!TENDERLY_API_URL || !TENDERLY_API_KEY) {
         return {
@@ -206,6 +215,7 @@ export async function simulateTransaction(
         save: false,
         save_if_fails: false,
         simulation_type: 'full',
+        ...(stateOverrides ? { state_objects: stateOverrides } : {}),
     };
 
     try {
@@ -242,13 +252,75 @@ export async function simulateTransaction(
 }
 
 /**
- * Check if any actions are calling back into the governor (self-modifying actions)
- * These need special simulation through Governor.execute() to populate the governance call queue
+ * === Governor onlyGovernance simulation support ===
+ *
+ * OpenZeppelin Governor's `onlyGovernance` modifier requires that when the executor is a Timelock,
+ * the call data is whitelisted in an internal deque (`_governanceCall`).
+ *
+ * In real execution this deque is populated during `Governor.execute()` before the timelock calls
+ * the governor back. In Tenderly we simulate single calls, so we use state overrides to pre-fill
+ * the deque with the expected keccak256(callData).
  */
-function hasGovernorSelfCalls(actions: ProposalAction[], governorAddress: string): boolean {
-    return actions.some(action => 
-        action.target.toLowerCase() === governorAddress.toLowerCase()
+
+// OZ GovernorUpgradeable storage location constant
+// Taken from contracts/@openzeppelin/governance/GovernorUpgradeable.sol
+const GOVERNOR_STORAGE_LOCATION =
+    0x7c712897014dbe49c045ef1299aa2d5f9e67e48eea4403efa21f1e0f3ac0cb00n;
+
+// GovernorStorage layout:
+// struct GovernorStorage {
+//   string _name;                     // slot + 0
+//   mapping(uint256 => ProposalCore)  // slot + 1
+//   DoubleEndedQueue.Bytes32Deque _governanceCall; // slot + 2
+// }
+const GOVERNANCE_CALL_OFFSET = 2n;
+
+// OpenZeppelin DoubleEndedQueue.Bytes32Deque layout (OZ v5):
+// struct Bytes32Deque {
+//   uint128 _begin;
+//   uint128 _end;
+//   mapping(uint128 => bytes32) _data;
+// }
+// Storage slots:
+// - slot + 0: _begin and _end packed into one slot (uint128 + uint128)
+// - slot + 1: mapping seed slot
+function getGovernanceCallStorageKeys(callDataHash: `0x${string}`): Record<string, string> {
+    const base = GOVERNOR_STORAGE_LOCATION + GOVERNANCE_CALL_OFFSET;
+
+    // packed slot value: begin=0, end=1
+    // end occupies upper 128 bits: (end << 128) | begin
+    const begin = 0n;
+    const end = 1n;
+    const packed = (end << 128n) | begin;
+
+    const packedSlotKey = toHex(base, { size: 32 });
+    const mappingSeedSlot = base + 1n;
+    // mapping(uint128 => bytes32) at storage slot `mappingSeedSlot`
+    // storage key for index=0 is keccak256(abi.encode(uint128(0), mappingSeedSlot))
+    // We approximate abi.encode by 32-byte left padded values.
+    const index0 = 0n;
+    const mappingKey = keccak256(
+        (`0x${index0.toString(16).padStart(64, '0')}${mappingSeedSlot
+            .toString(16)
+            .padStart(64, '0')}`) as `0x${string}`
     );
+
+    return {
+        [packedSlotKey]: toHex(packed, { size: 32 }),
+        [mappingKey]: callDataHash,
+    };
+}
+
+function buildGovernorOnlyGovernanceOverrides(
+    governorAddress: string,
+    calldata: `0x${string}`
+): TenderlySimulationRequest['state_objects'] {
+    const msgDataHash = keccak256(calldata);
+    return {
+        [governorAddress]: {
+            storage: getGovernanceCallStorageKeys(msgDataHash),
+        },
+    };
 }
 
 /**
@@ -299,38 +371,30 @@ export async function simulateProposalActions(
     governorAddress: string,
     timelockAddress: string,
     actions: ProposalAction[],
-    description: string = 'Simulation Test'
+    // Kept for backwards compatibility with callers; no longer needed in the new per-action simulation strategy
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _description: string = 'Simulation Test'
 ): Promise<SimulationResult[]> {
-    // Check if any actions are self-modifying (calling back into the governor)
-    if (hasGovernorSelfCalls(actions, governorAddress)) {
-        // Simulate through full Governor.execute() to populate governance call queue
-        const fullExecutionResult = await simulateProposalExecute(
-            chainId,
-            governorAddress,
-            timelockAddress,
-            actions,
-            description
-        );
+    // Simulate each action individually.
+    // For governor-target actions (onlyGovernance setters), we apply state overrides to pre-fill
+    // Governor's internal `_governanceCall` queue so the call is considered authorized.
 
-        // Return one result per action with the same outcome
-        // (since they all execute together in one transaction)
-        return actions.map(() => ({
-            ...fullExecutionResult,
-            // Distribute gas evenly across actions for display purposes
-            gasUsed: Math.floor(Number(fullExecutionResult.gasUsed) / actions.length).toString(),
-        }));
-    }
-
-    // For non-self-modifying actions, simulate individually as before
     const results: SimulationResult[] = [];
     for (const action of actions) {
+        const isGovernorTarget = action.target.toLowerCase() === governorAddress.toLowerCase();
+        const stateOverrides = isGovernorTarget
+            ? buildGovernorOnlyGovernanceOverrides(governorAddress, action.calldata)
+            : undefined;
+
         const result = await simulateTransaction(
             chainId,
             timelockAddress,
             action.target,
             action.value,
-            action.calldata
+            action.calldata,
+            stateOverrides
         );
+
         results.push(result);
     }
 
