@@ -75,9 +75,9 @@ export function calculateProposalState(proposal: Proposal, dao: DAO | undefined 
     let quorumReached = false;
     let voteSucceeded = false;
 
-    const votesFor = BigInt(proposal.votesFor);
-    const votesAgainst = BigInt(proposal.votesAgainst);
-    const votesAbstain = BigInt(proposal.votesAbstain);
+    const votesFor = BigInt(proposal.forVotes);
+    const votesAgainst = BigInt(proposal.againstVotes);
+    const votesAbstain = BigInt(proposal.abstainVotes);
 
     if (dao) {
         const totalSupply = BigInt(dao.totalSupply);

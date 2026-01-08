@@ -2,9 +2,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import { formatTokenAmount } from '../../utils/format';
 
 interface VotingChartProps {
-    votesFor: string;
-    votesAgainst: string;
-    votesAbstain: string;
+    forVotes: string;
+    againstVotes: string;
+    abstainVotes: string;
 }
 
 const COLORS = {
@@ -13,10 +13,10 @@ const COLORS = {
     abstain: '#6b7280',
 };
 
-export function VotingChart({ votesFor, votesAgainst, votesAbstain }: VotingChartProps) {
-    const forNum = Number(BigInt(votesFor) / BigInt(10 ** 18));
-    const againstNum = Number(BigInt(votesAgainst) / BigInt(10 ** 18));
-    const abstainNum = Number(BigInt(votesAbstain) / BigInt(10 ** 18));
+export function VotingChart({ forVotes, againstVotes, abstainVotes }: VotingChartProps) {
+    const forNum = Number(BigInt(forVotes) / BigInt(10 ** 18));
+    const againstNum = Number(BigInt(againstVotes) / BigInt(10 ** 18));
+    const abstainNum = Number(BigInt(abstainVotes) / BigInt(10 ** 18));
 
     const total = forNum + againstNum + abstainNum;
 

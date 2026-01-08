@@ -44,9 +44,9 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
 
             <div style={{ marginTop: 'var(--space-4)' }}>
                 <VoteProgress
-                    votesFor={proposal.votesFor}
-                    votesAgainst={proposal.votesAgainst}
-                    votesAbstain={proposal.votesAbstain}
+                    forVotes={proposal.forVotes}
+                    againstVotes={proposal.againstVotes}
+                    abstainVotes={proposal.abstainVotes}
                 />
             </div>
         </Link>

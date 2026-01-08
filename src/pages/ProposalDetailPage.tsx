@@ -102,9 +102,9 @@ export function ProposalDetailPage() {
                     <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
                         <h2 className="section-title" style={{ marginBottom: 'var(--space-4)' }}>Voting Results</h2>
                         <VoteProgress
-                            votesFor={proposal.votesFor}
-                            votesAgainst={proposal.votesAgainst}
-                            votesAbstain={proposal.votesAbstain}
+                            forVotes={proposal.forVotes}
+                            againstVotes={proposal.againstVotes}
+                            abstainVotes={proposal.abstainVotes}
                         />
                     </div>
 
@@ -140,9 +140,9 @@ export function ProposalDetailPage() {
                             Vote Distribution
                         </h3>
                         <VotingChart
-                            votesFor={proposal.votesFor}
-                            votesAgainst={proposal.votesAgainst}
-                            votesAbstain={proposal.votesAbstain}
+                            forVotes={proposal.forVotes}
+                            againstVotes={proposal.againstVotes}
+                            abstainVotes={proposal.abstainVotes}
                         />
                     </div>
 
