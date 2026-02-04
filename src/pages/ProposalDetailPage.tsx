@@ -6,6 +6,7 @@ import { AddressLink } from '../components/common/AddressLink';
 import { ChainBadge } from '../components/common/ChainBadge';
 import { ProposalStateBadge } from '../components/proposal/ProposalStateBadge';
 import { VoteProgress } from '../components/proposal/VoteProgress';
+import { DecodedActionsCard } from '../components/proposal/DecodedActionsCard';
 import { VotingChart } from '../components/common/VotingChart';
 import { VoteList } from '../components/vote/VoteList';
 import { VotingPanel } from '../components/vote/VotingPanel';
@@ -54,6 +55,8 @@ export function ProposalDetailPage() {
 
     const isActive = stateToDisplay === 'ACTIVE';
     const isPending = stateToDisplay === 'PENDING';
+
+    const decodedActions = proposal.decodedActions || [];
 
     return (
         <div>
@@ -107,6 +110,12 @@ export function ProposalDetailPage() {
                             abstainVotes={proposal.abstainVotes}
                         />
                     </div>
+
+                    {/* Decoded Actions */}
+                    <DecodedActionsCard 
+                        decodedActions={decodedActions} 
+                        chainId={proposal.chainId} 
+                    />
 
                     {/* Votes List */}
                     <div className="card">

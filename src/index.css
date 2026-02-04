@@ -2261,6 +2261,28 @@ img {
 }
 
 /* ============================================================================
+   Decoded Actions Card
+   ============================================================================ */
+
+.decoded-action-item {
+  transition: all var(--transition-base);
+}
+
+.decoded-action-item:hover {
+  border-color: var(--border-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.decoded-action-item button:hover {
+  background: var(--bg-glass-hover);
+}
+
+.copy-button:hover {
+  color: var(--accent-primary) !important;
+  background: var(--bg-glass-hover);
+}
+
+/* ============================================================================
    Execute Confirm Modal (shared styles with Vote Confirm Modal)
    ============================================================================ */
 
