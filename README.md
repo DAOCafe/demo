@@ -6,7 +6,7 @@ A demonstration application showcasing the capabilities of [daocafe-sdk](https:/
 
 ## Features
 
-- **DAO Discovery** - Browse all indexed DAOs across Base and Sepolia networks
+- **DAO Discovery** - Browse all indexed DAOs across Ethereum and Sepolia networks
 - **Proposal Management** - View proposals, vote distribution, and voting history
 - **Proposal Creation** - Create proposals with IPFS metadata storage
 - **Voting Interface** - Cast votes with optional on-chain reasons
@@ -40,8 +40,6 @@ Create a `.env` file based on `.env.example`:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_PINATA_JWT` | Yes | Pinata JWT for IPFS uploads |
-| `VITE_PINATA_GATEWAY` | No | Custom Pinata gateway (defaults to `gateway.pinata.cloud`) |
 | `VITE_TENDERLY_API_URL` | No | Tenderly API URL for transaction simulation |
 | `VITE_TENDERLY_API_KEY` | No | Tenderly API key |
 
@@ -56,7 +54,7 @@ cd demo
 
 # Create .env with your production values
 cp .env.example .env
-# Edit .env with your Pinata and Tenderly credentials
+# Edit .env with your Tenderly credentials
 
 # Build and start (requires indexer network to be running)
 docker compose up -d --build

@@ -96,7 +96,6 @@ interface TenderlySimulationResponse {
 function getNetworkId(chainId: number): string {
     const networkMap: Record<number, string> = {
         1: '1',        // Ethereum Mainnet
-        8453: '8453',  // Base
         11155111: '11155111', // Sepolia
     };
     return networkMap[chainId] || String(chainId);

@@ -13,8 +13,6 @@ RUN npm ci
 COPY . .
 
 # Build arguments for Vite environment variables (baked in at build time)
-ARG VITE_PINATA_JWT
-ARG VITE_PINATA_GATEWAY
 ARG VITE_TENDERLY_API_URL
 ARG VITE_TENDERLY_API_KEY
 

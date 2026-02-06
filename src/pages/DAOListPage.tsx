@@ -30,7 +30,7 @@ export function DAOListPage() {
             <div className="page-header">
                 <h1 className="page-title">Explore DAOs</h1>
                 <p className="page-subtitle">
-                    Browse governance organizations built with CreateDAO on Base & Sepolia
+                    Browse governance organizations built with CreateDAO on Ethereum & Sepolia
                 </p>
             </div>
 

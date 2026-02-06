@@ -1,8 +1,8 @@
 export const CHAIN_CONFIG = {
     8453: {
-        name: 'Base',
-        explorer: 'https://basescan.org',
-        color: '#0052ff',
+        name: 'Ethereum',
+        explorer: 'https://etherscan.io',
+        color: '#497493',
     },
     11155111: {
         name: 'Sepolia',

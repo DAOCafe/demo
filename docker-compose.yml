@@ -3,8 +3,6 @@ services:
     build:
       context: .
       args:
-        - VITE_PINATA_JWT=${VITE_PINATA_JWT}
-        - VITE_PINATA_GATEWAY=${VITE_PINATA_GATEWAY}
         - VITE_TENDERLY_API_URL=${VITE_TENDERLY_API_URL}
         - VITE_TENDERLY_API_KEY=${VITE_TENDERLY_API_KEY}
     restart: unless-stopped
