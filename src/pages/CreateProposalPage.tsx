@@ -11,7 +11,7 @@ import { governorAbi, tokenAbi } from '../config/abis';
 import { simulateProposalActions } from '../services/simulation';
 import type { ProposalAction, ProposalStep, SimulationResult } from '../types/proposal';
 
-type SupportedChainId = 8453 | 11155111;
+type SupportedChainId = 1 | 11155111;
 
 export function CreateProposalPage() {
     const { id: daoId } = useParams<{ id: string }>();

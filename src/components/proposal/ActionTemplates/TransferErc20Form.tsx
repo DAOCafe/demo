@@ -10,7 +10,7 @@ interface TransferErc20FormProps {
     chainId: number;
 }
 
-type SupportedChainId = 8453 | 11155111;
+type SupportedChainId = 1 | 11155111;
 
 export function TransferErc20Form({ onAdd, timelockAddress, chainId }: TransferErc20FormProps) {
     const [tokenAddress, setTokenAddress] = useState('');

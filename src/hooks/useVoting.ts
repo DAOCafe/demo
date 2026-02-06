@@ -132,7 +132,7 @@ export function useVoting(
                     abi: GOVERNOR_ABI,
                     functionName: 'castVoteWithReason',
                     args: [BigInt(onChainProposalId), VoteSupport[support], reasonString],
-                    chainId: chainId as 8453 | 11155111,
+                    chainId: chainId as 1 | 11155111,
                 });
             } else {
                 writeContract({
@@ -140,7 +140,7 @@ export function useVoting(
                     abi: GOVERNOR_ABI,
                     functionName: 'castVote',
                     args: [BigInt(onChainProposalId), VoteSupport[support]],
-                    chainId: chainId as 8453 | 11155111,
+                    chainId: chainId as 1 | 11155111,
                 });
             }
         },

@@ -38,8 +38,8 @@ const ACTION_CONFIG = {
 };
 
 function getExplorerUrl(chainId: number, txHash: string): string {
-    if (chainId === 8453) {
-        return `https://basescan.org/tx/${txHash}`;
+    if (chainId === 1) {
+        return `https://etherscan.io/tx/${txHash}`;
     }
     return `https://sepolia.etherscan.io/tx/${txHash}`;
 }

@@ -1,5 +1,5 @@
 export const CHAIN_CONFIG = {
-    8453: {
+    1: {
         name: 'Ethereum',
         explorer: 'https://etherscan.io',
         color: '#497493',

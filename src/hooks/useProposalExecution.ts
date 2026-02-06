@@ -158,7 +158,7 @@ export function useProposalExecution(
             abi: GOVERNOR_EXECUTION_ABI,
             functionName: currentAction,
             args: [params.targets, params.values, params.calldatas, params.descriptionHash],
-            chainId: chainId as 8453 | 11155111,
+            chainId: chainId as 1 | 11155111,
         });
     }, [currentAction, getProposalParams, canQueue, canExecute, canCancel, governorAddress, chainId, writeContract]);
 
