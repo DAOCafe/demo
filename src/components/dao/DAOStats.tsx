@@ -27,6 +27,10 @@ export function DAOStats({ dao }: DAOStatsProps) {
                 label="Quorum"
                 value={dao.quorumNumerator ? `${dao.quorumNumerator}%` : 'N/A'}
             />
+            <StatCard
+                label="Timelock Delay"
+                value={dao.timelockMinDelay ? formatBlocks(dao.timelockMinDelay) : 'N/A'}
+            />
         </div>
     );
 }
