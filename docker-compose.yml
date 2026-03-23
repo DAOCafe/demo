@@ -1,5 +1,10 @@
 services:
   demo:
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
     build:
       context: .
       args:
