@@ -15,7 +15,7 @@ interface BatchTransferErc20FormProps {
     chainId: number;
 }
 
-type SupportedChainId = 1 | 11155111;
+type SupportedChainId = 1 | 11155111 | 42161;
 
 export function BatchTransferErc20Form({ onAdd, timelockAddress, chainId }: BatchTransferErc20FormProps) {
     const [tokenAddress, setTokenAddress] = useState('');

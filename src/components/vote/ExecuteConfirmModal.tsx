@@ -41,6 +41,9 @@ function getExplorerUrl(chainId: number, txHash: string): string {
     if (chainId === 1) {
         return `https://etherscan.io/tx/${txHash}`;
     }
+    if (chainId === 42161) {
+        return `https://arbiscan.io/tx/${txHash}`;
+    }
     return `https://sepolia.etherscan.io/tx/${txHash}`;
 }
 

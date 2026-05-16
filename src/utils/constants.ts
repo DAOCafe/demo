@@ -9,6 +9,11 @@ export const CHAIN_CONFIG = {
         explorer: 'https://sepolia.etherscan.io',
         color: '#627eea',
     },
+    42161: {
+        name: 'Arbitrum',
+        explorer: 'https://arbiscan.io',
+        color: '#28a0f0',
+    },
 } as const;
 
 export type SupportedChainId = keyof typeof CHAIN_CONFIG;

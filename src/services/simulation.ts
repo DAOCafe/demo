@@ -97,6 +97,7 @@ function getNetworkId(chainId: number): string {
     const networkMap: Record<number, string> = {
         1: '1',        // Ethereum Mainnet
         11155111: '11155111', // Sepolia
+        42161: '42161', // Arbitrum
     };
     return networkMap[chainId] || String(chainId);
 }
